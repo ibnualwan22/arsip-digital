@@ -33,7 +33,7 @@ export default function RiwayatClient({
     const params = new URLSearchParams(searchParams)
     if (matchedP) params.set("p", matchedP.id.toString())
     params.delete("g") // Reset gelombang
-    router.push(`/admin/riwayat?${params.toString()}`)
+    router.push(`/admin/riwayat?${params.toString()}`, { scroll: false })
   }
 
   const handleFilterGelombang = (val: string) => {
@@ -45,7 +45,7 @@ export default function RiwayatClient({
       const matchedG = gelombangList.find(g => g.nama_gelombang === val)
       if (matchedG) params.set("g", matchedG.id.toString())
     }
-    router.push(`/admin/riwayat?${params.toString()}`)
+    router.push(`/admin/riwayat?${params.toString()}`, { scroll: false })
   }
 
   const handleExport = () => {

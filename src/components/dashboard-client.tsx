@@ -43,7 +43,7 @@ export default function DashboardClient({
       const selectedId = initialGelombangList.find(g => g.nama_gelombang === val)?.id
       if (selectedId) params.set("gelombangId", selectedId.toString())
     }
-    router.push(`/?${params.toString()}`)
+    router.push(`/admin?${params.toString()}`, { scroll: false })
   }
 
   // Filter List (Pencarian Nama)
