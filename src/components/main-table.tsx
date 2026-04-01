@@ -148,13 +148,13 @@ export function MainTable({ santriList, readOnly = false }: { santriList: any[],
           <TableHeader>
           <TableRow>
             <TableHead className="sticky top-0 z-20 bg-neutral-100 w-16 whitespace-nowrap text-center text-sm font-semibold uppercase shadow-sm">No</TableHead>
-            <TableHead className="sticky top-0 left-0 z-30 bg-neutral-100 border-r w-64 min-w-[250px] whitespace-nowrap text-sm font-semibold uppercase shadow-sm">Nama Santri</TableHead>
+            <TableHead className="sticky top-0 left-0 z-30 bg-neutral-100 border-r w-40 min-w-[150px] md:w-64 md:min-w-[250px] whitespace-nowrap text-sm font-semibold uppercase shadow-[1px_1px_0_0_#e5e7eb] md:shadow-sm">Nama Santri</TableHead>
             {COLUMNS.map(col => (
               <TableHead key={col.key} className="sticky top-0 z-20 bg-neutral-100 w-24 text-center whitespace-nowrap text-sm font-semibold shadow-sm">{col.title}</TableHead>
             ))}
             <TableHead className="sticky top-0 z-20 bg-neutral-100 w-48 min-w-[200px] text-sm font-semibold border-l px-4 whitespace-nowrap shadow-sm">Catatan Kekurangan</TableHead>
             {!readOnly && (
-              <TableHead className="sticky top-0 right-0 z-30 bg-neutral-100 w-20 text-center whitespace-nowrap text-sm font-semibold border-l shadow-[0_1px_0_0_#e5e7eb,inset_1px_0_0_0_#e5e7eb]">Aksi</TableHead>
+              <TableHead className="sticky top-0 right-auto md:right-0 z-30 bg-neutral-100 w-20 text-center whitespace-nowrap text-sm font-semibold md:border-l shadow-[0_1px_0_0_#e5e7eb] md:shadow-[0_1px_0_0_#e5e7eb,inset_1px_0_0_0_#e5e7eb]">Aksi</TableHead>
             )}
           </TableRow>
         </TableHeader>
@@ -181,10 +181,10 @@ export function MainTable({ santriList, readOnly = false }: { santriList: any[],
                 </TableCell>
 
                 {/* STICKY COLUMN */}
-                <TableCell className="sticky left-0 z-10 bg-white group-hover:bg-neutral-50 border-r align-top py-3 shadow-[1px_0_0_0_#e5e7eb]">
+                <TableCell className="sticky left-0 z-10 bg-white group-hover:bg-neutral-50 border-r align-top py-3 shadow-[1px_0_0_0_#e5e7eb] max-w-[150px] md:max-w-none break-words">
                   <div className="flex flex-col">
-                    <span className="font-semibold text-neutral-800 text-base">{santri.nama.toUpperCase()}</span>
-                    <span className="text-xs font-semibold px-2 py-0.5 mt-1 bg-neutral-100 text-neutral-500 rounded-full w-max">
+                    <span className="font-semibold text-neutral-800 text-sm md:text-base line-clamp-2" title={santri.nama.toUpperCase()}>{santri.nama.toUpperCase()}</span>
+                    <span className="text-[10px] md:text-xs font-semibold px-2 py-0.5 mt-1 bg-neutral-100 text-neutral-500 rounded-full w-max max-w-full truncate">
                       {santri.gelombang?.nama_gelombang || "Tanpa Gelombang"}
                     </span>
                   </div>
@@ -241,7 +241,7 @@ export function MainTable({ santriList, readOnly = false }: { santriList: any[],
                 
                 {/* AKSI */}
                 {!readOnly && (
-                  <TableCell className="sticky right-0 z-10 bg-white group-hover:bg-neutral-50 shadow-[-1px_0_0_0_#e5e7eb] border-l align-middle w-20 px-2 min-w-[5rem]">
+                  <TableCell className="sticky right-auto md:right-0 z-10 bg-white group-hover:bg-neutral-50 md:shadow-[-1px_0_0_0_#e5e7eb] md:border-l align-middle w-20 px-2 min-w-[5rem]">
                     <SantriRowActions santri={santri} />
                   </TableCell>
                 )}
