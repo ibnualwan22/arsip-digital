@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Gelombang {
+  id             Int       @id @default(autoincrement())
+  nama_gelombang String    @unique @db.VarChar(255)
+  is_active      Boolean   @default(true)
+  santri         Santri[]  @relation("GelombangToSantri")
+}
+
+model Santri {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  no_urut      Int?
+  nama         String       @db.VarChar(255)
+  gelombang_id Int?
+  gelombang    Gelombang?   @relation("GelombangToSantri", fields: [gelombang_id], references: [id])
+  created_at   DateTime?    @default(now()) @db.Timestamp(6)
+  
+  // Relasi one-to-one dengan tabel Pemberkasan
+  pemberkasan  Pemberkasan?
+}
+
+model Pemberkasan {
+  santri_id            String    @id @db.Uuid
+  // Relasi wajib, onDelete Cascade agar saat santri dihapus, berkasnya ikut terhapus
+  santri               Santri    @relation(fields: [santri_id], references: [id], onDelete: Cascade)
+  
+  has_akta_lahir           Boolean? @default(false)
+  has_kk                   Boolean? @default(false)
+  has_ijazah               Boolean? @default(false)
+  has_paspor               Boolean? @default(false)
+  has_skck                 Boolean? @default(false)
+  has_surat_sehat          Boolean? @default(false)
+  has_pas_photo            Boolean? @default(false)
+  has_surat_rekom          Boolean? @default(false)
+  has_pakta_integritas     Boolean? @default(false)
+  has_biodata              Boolean? @default(false)
+  has_pernyataan_kebenaran Boolean? @default(false)
+  has_jaminan_sponsorship  Boolean? @default(false)
+  has_statistik_pesantren  Boolean? @default(false)
+  
+  updated_at           DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+}
