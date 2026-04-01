@@ -26,22 +26,22 @@ export const COLUMNS = [
   { key: "has_statistik_pesantren", title: "FC Jaminan FC Jaminan Statistik Pesantren (NSP) Bagi Yang Berijazah Pesantren" },
 ]
 
-function SingleSwitch({ santriId, field, initialValue }: { santriId: string; field: string; initialValue: boolean }) {
+function ToggleDocument({ santriId, fieldKey, initialValue, readOnly }: { santriId: string, fieldKey: string, initialValue: boolean, readOnly?: boolean }) {
   const [isPending, startTransition] = useTransition()
-  const [optimisticValue, setOptimisticValue] = useOptimistic(
+  const [optimisticValue, addOptimisticValue] = useOptimistic(
     initialValue,
     (state, newValue: boolean) => newValue
   )
 
   const handleChange = (checked: boolean) => {
+    if (readOnly) return
+    addOptimisticValue(checked)
     startTransition(async () => {
-      setOptimisticValue(checked)
       try {
-        await toggleDocument(santriId, field, checked)
-        // Toast is optional, we don't want to spam toast for every fast click.
+        await toggleDocument(santriId, fieldKey, checked)
       } catch (e) {
         toast.error("Gagal menyimpan perubahan. Coba ulangi.")
-        setOptimisticValue(initialValue) // Revert
+        addOptimisticValue(initialValue) // Revert
       }
     })
   }
@@ -52,7 +52,7 @@ function SingleSwitch({ santriId, field, initialValue }: { santriId: string; fie
         type="checkbox"
         checked={optimisticValue}
         onChange={(e) => handleChange(e.target.checked)}
-        disabled={isPending}
+        disabled={isPending || readOnly}
         className="w-6 h-6 accent-emerald-500 cursor-pointer rounded shadow-sm hover:scale-105 transition-transform disabled:opacity-50"
       />
     </div>
@@ -135,7 +135,7 @@ function SantriRowActions({ santri }: { santri: any }) {
   )
 }
 
-export function MainTable({ santriList }: { santriList: any[] }) {
+export function MainTable({ santriList, readOnly = false }: { santriList: any[], readOnly?: boolean }) {
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 100
   const totalPages = Math.max(1, Math.ceil(santriList.length / pageSize))
@@ -153,7 +153,9 @@ export function MainTable({ santriList }: { santriList: any[] }) {
               <TableHead key={col.key} className="sticky top-0 z-20 bg-neutral-100 w-24 text-center whitespace-nowrap text-sm font-semibold shadow-sm">{col.title}</TableHead>
             ))}
             <TableHead className="sticky top-0 z-20 bg-neutral-100 w-48 min-w-[200px] text-sm font-semibold border-l px-4 whitespace-nowrap shadow-sm">Catatan Kekurangan</TableHead>
-            <TableHead className="sticky top-0 right-0 z-30 bg-neutral-100 w-20 text-center whitespace-nowrap text-sm font-semibold border-l shadow-[0_1px_0_0_#e5e7eb,inset_1px_0_0_0_#e5e7eb]">Aksi</TableHead>
+            {!readOnly && (
+              <TableHead className="sticky top-0 right-0 z-30 bg-neutral-100 w-20 text-center whitespace-nowrap text-sm font-semibold border-l shadow-[0_1px_0_0_#e5e7eb,inset_1px_0_0_0_#e5e7eb]">Aksi</TableHead>
+            )}
           </TableRow>
         </TableHeader>
 
@@ -190,11 +192,12 @@ export function MainTable({ santriList }: { santriList: any[] }) {
 
                 {/* TOGGLES */}
                 {COLUMNS.map(col => (
-                  <TableCell key={col.key} className="align-middle">
-                    <SingleSwitch
-                      santriId={santri.id}
-                      field={col.key}
-                      initialValue={Boolean(santri.pemberkasan?.[col.key])}
+                  <TableCell key={col.key} className="p-0 border-l align-middle w-24 min-w-[6rem] h-full">
+                    <ToggleDocument 
+                      santriId={santri.id} 
+                      fieldKey={col.key} 
+                      initialValue={santri.pemberkasan?.[col.key] || false} 
+                      readOnly={readOnly}
                     />
                   </TableCell>
                 ))}
@@ -237,9 +240,11 @@ export function MainTable({ santriList }: { santriList: any[] }) {
                 </TableCell>
                 
                 {/* AKSI */}
-                <TableCell className="sticky right-0 z-10 bg-white group-hover:bg-neutral-50 shadow-[-1px_0_0_0_#e5e7eb] border-l align-middle w-20 px-2 min-w-[5rem]">
-                  <SantriRowActions santri={santri} />
-                </TableCell>
+                {!readOnly && (
+                  <TableCell className="sticky right-0 z-10 bg-white group-hover:bg-neutral-50 shadow-[-1px_0_0_0_#e5e7eb] border-l align-middle w-20 px-2 min-w-[5rem]">
+                    <SantriRowActions santri={santri} />
+                  </TableCell>
+                )}
               </TableRow>
             )
           })}

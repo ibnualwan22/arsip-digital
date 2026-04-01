@@ -7,11 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Periode {
+  id             Int         @id @default(autoincrement())
+  nama_periode   String      @unique @db.VarChar(255)
+  is_active      Boolean     @default(false)
+  created_at     DateTime?   @default(now()) @db.Timestamp(6)
+  
+  gelombang      Gelombang[] @relation("PeriodeToGelombang")
+}
+
 model Gelombang {
   id             Int       @id @default(autoincrement())
-  nama_gelombang String    @unique @db.VarChar(255)
+  periode_id     Int
+  periode        Periode   @relation("PeriodeToGelombang", fields: [periode_id], references: [id], onDelete: Cascade)
+  nama_gelombang String    @db.VarChar(255)
   is_active      Boolean   @default(true)
   santri         Santri[]  @relation("GelombangToSantri")
+
+  @@unique([periode_id, nama_gelombang])
 }
 
 model Santri {

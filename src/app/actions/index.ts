@@ -4,16 +4,73 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import * as xlsx from "xlsx"
 
-/** Get list of all Gelombang */
+/** Get active Periode */
+export async function getActivePeriode() {
+  return await prisma.periode.findFirst({
+    where: { is_active: true }
+  })
+}
+
+/** Get all Periode */
+export async function getPeriodeList() {
+  return await prisma.periode.findMany({
+    orderBy: { created_at: 'desc' }
+  })
+}
+
+/** Add new Periode */
+export async function addPeriode(nama_periode: string) {
+  if (!nama_periode.trim()) throw new Error("Nama Periode harus diisi")
+  await prisma.periode.create({
+    data: { nama_periode: nama_periode.trim(), is_active: false }
+  })
+  revalidatePath("/")
+}
+
+/** Set Active Periode */
+export async function setActivePeriode(id: number) {
+  await prisma.$transaction([
+    prisma.periode.updateMany({ data: { is_active: false } }),
+    prisma.periode.update({ where: { id }, data: { is_active: true } })
+  ])
+  revalidatePath("/")
+}
+
+/** Get list of all Gelombang for active Periode */
 export async function getGelombangList() {
+  const active = await getActivePeriode()
+  if (!active) return []
+
   return await prisma.gelombang.findMany({
+    where: { periode_id: active.id },
     orderBy: { id: 'asc' },
   })
 }
 
-/** Get Santri inside a Gelombang, including their pemberkasan */
-export async function getSantriList(gelombangId?: number) {
-  const where = gelombangId ? { gelombang_id: gelombangId } : {}
+/** Get list of Gelombang by specific Periode (for Riwayat) */
+export async function getAllGelombangList(periodeId: number) {
+  return await prisma.gelombang.findMany({
+    where: { periode_id: periodeId },
+    orderBy: { id: 'asc' },
+  })
+}
+
+/** Get Santri inside a Gelombang, or globally inside a Periode, including their pemberkasan */
+export async function getSantriList(gelombangId?: number, periodeId?: number) {
+  let where: any = {}
+  if (gelombangId) {
+    where.gelombang_id = gelombangId
+  } else if (periodeId) {
+    where.gelombang = { periode_id: periodeId }
+  } else {
+    const active = await getActivePeriode()
+    if (active) {
+      where.gelombang = { periode_id: active.id }
+    } else {
+      return []
+    }
+  }
+
   return await prisma.santri.findMany({
     where,
     include: {
@@ -54,11 +111,17 @@ export async function toggleDocument(
   return { success: true }
 }
 
-/** Create new Gelombang */
+/** Create new Gelombang in active Periode */
 export async function addGelombang(namaGelombang: string) {
   if (!namaGelombang.trim()) throw new Error("Nama harus diisi")
+  const active = await getActivePeriode()
+  if (!active) throw new Error("Tidak ada Periode aktif")
+
   const gel = await prisma.gelombang.create({
-    data: { nama_gelombang: namaGelombang.trim() }
+    data: { 
+      nama_gelombang: namaGelombang.trim(),
+      periode_id: active.id
+    }
   })
   revalidatePath("/")
   return gel
