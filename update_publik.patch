@@ -1,0 +1,67 @@
+--- src/app/publik-client.tsx
++++ src/app/publik-client.tsx
+@@ -72,32 +72,36 @@
+   activePeriodeId?: number
+ }) {
+   const [search, setSearch] = useState("")
+-  const [selectedPeriode, setSelectedPeriode] = useState<string>(activePeriodeId ? activePeriodeId.toString() : "all")
++  
++  // Get the active periode name for initial state
++  const activePeriodeObj = periodes.find(p => p.id === activePeriodeId)
++  const initialPeriodeName = activePeriodeObj ? activePeriodeObj.nama_periode : "all"
++  
++  const [selectedPeriode, setSelectedPeriode] = useState<string>(initialPeriodeName)
+   const [selectedGelombang, setSelectedGelombang] = useState<string>("all")
+   const [selectedSantriForModal, setSelectedSantriForModal] = useState<Santri | null>(null)
+ 
+   // Filter gelombang options based on selected periode
+   const filteredGelombangs = useMemo(() => {
+     if (selectedPeriode === "all") return gelumbangs
+-    return gelumbangs.filter((g) => g.periode_id.toString() === selectedPeriode)
+-  }, [selectedPeriode, gelumbangs])
++    const matchedP = periodes.find(p => p.nama_periode === selectedPeriode)
++    if (!matchedP) return gelumbangs
++    return gelumbangs.filter((g) => g.periode_id === matchedP.id)
++  }, [selectedPeriode, gelumbangs, periodes])
+ 
+   // Filter santri
+   const filteredSantri = useMemo(() => {
+     return initialSantriList.filter((santri) => {
+       const matchSearch = santri.nama.toLowerCase().includes(search.toLowerCase())
+       
+       let matchPeriode = true
+-      // Find the periode for this santri based on its gelombang
+       if (selectedPeriode !== "all" && santri.gelombang) {
+         const gelombang = gelumbangs.find(g => g.id === santri.gelombang_id)
+-        if (gelombang && gelombang.periode_id.toString() !== selectedPeriode) {
++        const matchedP = periodes.find(p => p.nama_periode === selectedPeriode)
++        if (gelombang && matchedP && gelombang.periode_id !== matchedP.id) {
+           matchPeriode = false
+         }
+       } else if (selectedPeriode !== "all" && !santri.gelombang) {
+          matchPeriode = false // no gelombang means we can't match periode
+       }
+ 
+-      const matchGelombang = selectedGelombang === "all" || santri.gelombang_id?.toString() === selectedGelombang
++      const matchGelombang = selectedGelombang === "all" || santri.gelombang?.nama_gelombang === selectedGelombang
+ 
+       return matchSearch && matchPeriode && matchGelombang
+     })
+@@ -159,7 +163,7 @@
+                 <SelectContent>
+                   <SelectItem value="all">Semua Periode</SelectItem>
+                   {periodes.map(p => (
+-                    <SelectItem key={p.id} value={p.id.toString()}>{p.nama_periode}</SelectItem>
++                    <SelectItem key={p.id} value={p.nama_periode}>{p.nama_periode}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+@@ -175,7 +179,7 @@
+                 <SelectContent>
+                   <SelectItem value="all">Semua Gelombang</SelectItem>
+                   {filteredGelombangs.map(g => (
+-                    <SelectItem key={g.id} value={g.id.toString()}>{g.nama_gelombang}</SelectItem>
++                    <SelectItem key={g.id} value={g.nama_gelombang}>{g.nama_gelombang}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
