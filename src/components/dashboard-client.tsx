@@ -49,7 +49,7 @@ export default function DashboardClient({
   }
 
   // Filter List (Pencarian Nama)
-  const filteredSantri = initialSantriList.filter(s => 
+  const filteredSantri = initialSantriList.filter(s =>
     s.nama.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -63,13 +63,13 @@ export default function DashboardClient({
         "Gelombang": s.gelombang?.nama_gelombang || "-",
       }
       COLUMNS.forEach(col => {
-        row[col.title] = s.pemberkasan?.[col.key] ? "v" : "" 
+        row[col.title] = s.pemberkasan?.[col.key] ? "v" : ""
       })
       return row
     })
 
     const worksheet = xlsx.utils.json_to_sheet(exportData)
-    
+
     // Auto format column width: First column tiny, second column wider, everything else fixed wide
     const colWidths = [
       { wch: 5 }, // No
@@ -145,9 +145,9 @@ export default function DashboardClient({
             </Select>
           </div>
           <div className="flex-1 w-full relative">
-            <input 
-              type="text" 
-              placeholder="🔍 Cari Nama Santri..." 
+            <input
+              type="text"
+              placeholder="🔍 Cari Nama Santri..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-11 px-4 rounded-md border border-input bg-transparent text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -163,7 +163,7 @@ export default function DashboardClient({
             <h2 className="text-xl font-semibold text-emerald-800 uppercase tracking-wider">{activeGelombangName}</h2>
             <p className="text-sm text-neutral-500">Menampilkan santri hanya pada gelombang ini</p>
           </div>
-          <Button 
+          {/* <Button 
             variant="destructive" 
             size="sm" 
             onClick={handleDeleteGelombang}
@@ -172,7 +172,7 @@ export default function DashboardClient({
           >
             <Trash2 className="h-4 w-4" />
             {isPendingDelete ? "Menghapus..." : "Kosongkan Gelombang"}
-          </Button>
+          </Button> */}
         </div>
       )}
 
@@ -182,15 +182,15 @@ export default function DashboardClient({
       </div>
 
       {/* MODALS */}
-      <ImportModal 
-        open={importModalOpen} 
-        onOpenChange={setImportModalOpen} 
-        gelombangList={initialGelombangList} 
+      <ImportModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        gelombangList={initialGelombangList}
       />
-      <AddManualModal 
-        open={manualModalOpen} 
-        onOpenChange={setManualModalOpen} 
-        gelombangList={initialGelombangList} 
+      <AddManualModal
+        open={manualModalOpen}
+        onOpenChange={setManualModalOpen}
+        gelombangList={initialGelombangList}
       />
     </div>
   )
