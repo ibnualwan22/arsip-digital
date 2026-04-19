@@ -180,6 +180,14 @@ export async function deleteSantri(id: string) {
   revalidatePath("/")
 }
 
+export async function deleteSantriByGelombang(gelombangId: number) {
+  if (!gelombangId) throw new Error("ID Gelombang tidak valid")
+  await prisma.santri.deleteMany({
+    where: { gelombang_id: gelombangId }
+  })
+  revalidatePath("/")
+}
+
 // Logic untuk mengecek cell checkmark atau string "true/false", "v", "x", "1", "0" dll
 function parseBoolean(val: any): boolean {
   if (val === true || val === 1) return true

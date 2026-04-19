@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { deleteSantriByGelombang } from "@/app/actions"
 import { MainTable, COLUMNS } from "./main-table"
 import { StatCards } from "./stat-cards"
 import { Button } from "./ui/button"
 import { ImportModal } from "./import-modal"
 import { AddManualModal } from "./add-manual-modal"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { FileDown, FileUp, PlusCircle } from "lucide-react"
+import { FileDown, FileUp, PlusCircle, Trash2 } from "lucide-react"
 import * as xlsx from "xlsx"
 import { toast } from "sonner"
 
@@ -29,6 +30,7 @@ export default function DashboardClient({
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [manualModalOpen, setManualModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isPendingDelete, startTransition] = useTransition()
 
   const activeGelombangName = initialGelombangList.find(
     g => g.id === activeGelombangId
@@ -86,6 +88,22 @@ export default function DashboardClient({
     toast.success("Berhasil mengekspor Laporan Excel!")
   }
 
+  const handleDeleteGelombang = () => {
+    if (!activeGelombangId) return
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus SEMUA SANTRI di ${activeGelombangName}? Aksi ini tidak dapat dibatalkan!`)) {
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        await deleteSantriByGelombang(activeGelombangId)
+        toast.success(`Semua santri di ${activeGelombangName} berhasil dihapus`)
+      } catch (error: any) {
+        toast.error(error.message || "Gagal menghapus santri")
+      }
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* HEADER */}
@@ -140,9 +158,21 @@ export default function DashboardClient({
 
       {/* ACTIVE GELOMBANG HIGHLIGHT */}
       {activeGelombangName && (
-        <div className="my-2 border-l-4 border-emerald-500 pl-4 py-1">
-          <h2 className="text-xl font-semibold text-emerald-800 uppercase tracking-wider">{activeGelombangName}</h2>
-          <p className="text-sm text-neutral-500">Menampilkan santri hanya pada gelombang ini</p>
+        <div className="my-2 border-l-4 border-emerald-500 pl-4 py-1 flex items-center justify-between bg-white p-3 rounded-r-lg shadow-sm border-y border-r border-neutral-200">
+          <div>
+            <h2 className="text-xl font-semibold text-emerald-800 uppercase tracking-wider">{activeGelombangName}</h2>
+            <p className="text-sm text-neutral-500">Menampilkan santri hanya pada gelombang ini</p>
+          </div>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={handleDeleteGelombang}
+            disabled={isPendingDelete || filteredSantri.length === 0}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isPendingDelete ? "Menghapus..." : "Kosongkan Gelombang"}
+          </Button>
         </div>
       )}
 
