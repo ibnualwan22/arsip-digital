@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useTransition, useOptimistic } from "react"
-import { toggleDocument, editSantri, deleteSantri } from "@/app/actions"
+import { toggleDocument, editSantri, deleteSantri, toggleResignSantri } from "@/app/actions"
 import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "./ui/dialog"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
-import { Pencil, Trash2 } from "lucide-react"
+import { Pencil, Trash2, UserMinus, UserCheck } from "lucide-react"
 
 export const COLUMNS = [
   { key: "has_akta_lahir", title: "Akta Lahir asli + FC(5)" },
@@ -91,8 +91,31 @@ function SantriRowActions({ santri }: { santri: any }) {
     })
   }
 
+  const handleToggleResign = () => {
+    if (!window.confirm(santri.is_resigned ? "Batalkan status mengundurkan diri?" : "Tandai santri ini sebagai mengundurkan diri?")) return
+    
+    startTransition(async () => {
+      try {
+        await toggleResignSantri(santri.id, !santri.is_resigned)
+        toast.success(santri.is_resigned ? "Dibatalkan" : "Berhasil ditandai mengundurkan diri")
+      } catch (e) {
+        toast.error("Gagal mengubah status")
+      }
+    })
+  }
+
   return (
     <div className="flex items-center justify-center gap-1">
+      {/* TOGGLE RESIGN */}
+      <button 
+        onClick={handleToggleResign}
+        disabled={isPending}
+        className="p-1.5 text-neutral-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors disabled:opacity-50" 
+        title={santri.is_resigned ? "Batal Mengundurkan Diri" : "Tandai Mengundurkan Diri"}
+      >
+        {santri.is_resigned ? <UserCheck className="w-4 h-4" /> : <UserMinus className="w-4 h-4" />}
+      </button>
+
       {/* EDIT DIALOG */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogTrigger render={<button className="p-1.5 text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Edit" />}>
@@ -175,18 +198,27 @@ export function MainTable({ santriList, readOnly = false }: { santriList: any[],
             const isLengkap = missingDocs.length === 0
 
             return (
-              <TableRow key={santri.id} className="hover:bg-neutral-50">
+              <TableRow key={santri.id} className={`hover:bg-neutral-50 ${santri.is_resigned ? 'opacity-70 bg-neutral-100/50 grayscale-[50%]' : ''}`}>
                 <TableCell className="text-center font-medium text-neutral-500">
-                  {(santri.no_urut || 0) > 0 ? santri.no_urut : (actualIndex + 1)}
+                  {santri.stable_no_urut}
                 </TableCell>
 
                 {/* STICKY COLUMN */}
                 <TableCell className="sticky left-0 z-10 bg-white group-hover:bg-neutral-50 border-r align-top py-3 shadow-[1px_0_0_0_#e5e7eb] max-w-[150px] md:max-w-none break-words">
                   <div className="flex flex-col">
-                    <span className="font-semibold text-neutral-800 text-sm md:text-base line-clamp-2" title={santri.nama.toUpperCase()}>{santri.nama.toUpperCase()}</span>
-                    <span className="text-[10px] md:text-xs font-semibold px-2 py-0.5 mt-1 bg-neutral-100 text-neutral-500 rounded-full w-max max-w-full truncate">
-                      {santri.gelombang?.nama_gelombang || "Tanpa Gelombang"}
+                    <span className={`font-semibold text-sm md:text-base line-clamp-2 ${santri.is_resigned ? "text-neutral-400 line-through" : "text-neutral-800"}`} title={santri.nama.toUpperCase()}>
+                      {santri.nama.toUpperCase()}
                     </span>
+                    <div className="flex items-center gap-1 mt-1 flex-wrap">
+                      <span className="text-[10px] md:text-xs font-semibold px-2 py-0.5 bg-neutral-100 text-neutral-500 rounded-full w-max max-w-full truncate">
+                        {santri.gelombang?.nama_gelombang || "Tanpa Gelombang"}
+                      </span>
+                      {santri.is_resigned && (
+                         <span className="text-[10px] md:text-xs font-semibold px-2 py-0.5 bg-red-100 text-red-600 rounded-full w-max shadow-sm border border-red-200">
+                           Mengundurkan Diri
+                         </span>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
 

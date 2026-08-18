@@ -172,6 +172,15 @@ export async function editSantri(id: string, nama: string, noUrutStr?: string) {
   revalidatePath("/")
 }
 
+export async function toggleResignSantri(id: string, is_resigned: boolean) {
+  if (!id) throw new Error("ID tidak valid")
+  await prisma.santri.update({
+    where: { id },
+    data: { is_resigned }
+  })
+  revalidatePath("/")
+}
+
 export async function deleteSantri(id: string) {
   if (!id) throw new Error("ID tidak valid")
   await prisma.santri.delete({

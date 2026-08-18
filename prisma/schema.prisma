@@ -30,6 +30,7 @@ model Gelombang {
 model Santri {
   id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   no_urut      Int?
+  is_resigned  Boolean      @default(false)
   nama         String       @db.VarChar(255)
   gelombang_id Int?
   gelombang    Gelombang?   @relation("GelombangToSantri", fields: [gelombang_id], references: [id])

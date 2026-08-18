@@ -33,9 +33,9 @@ export function StatCards({ santriList }: StatCardsProps) {
     setModalOpen(true)
   }
 
-  // Find users missing the selected doc
+  // Find users missing the selected doc (exclude resigned)
   const missingSantri = activeDocKey
-    ? santriList.filter(s => s.pemberkasan && s.pemberkasan[activeDocKey] === false)
+    ? santriList.filter(s => !s.is_resigned && s.pemberkasan && s.pemberkasan[activeDocKey] === false)
     : []
 
   const activeDocLabel = activeDocKey
@@ -47,7 +47,7 @@ export function StatCards({ santriList }: StatCardsProps) {
       <div className="grid grid-cols-2 lg:grid-cols-5 md:grid-cols-3 sm:grid-cols-2 gap-4">
         {DOCUMENTS.map(doc => {
           // Count missing
-          const missingCount = santriList.filter(s => s.pemberkasan && s.pemberkasan[doc.key] === false).length
+          const missingCount = santriList.filter(s => !s.is_resigned && s.pemberkasan && s.pemberkasan[doc.key] === false).length
 
           return (
             <div

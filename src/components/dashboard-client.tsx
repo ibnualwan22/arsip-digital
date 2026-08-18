@@ -48,23 +48,35 @@ export default function DashboardClient({
     router.push(`/admin?${params.toString()}`, { scroll: false })
   }
 
+  // Calculate stable number first based on index + 1 if no_urut doesn't exist
+  const santriWithStableIndex = initialSantriList.map((s, idx) => ({
+    ...s,
+    stable_no_urut: s.no_urut > 0 ? s.no_urut : (idx + 1)
+  }))
+
   // Filter List (Pencarian Nama)
-  const filteredSantri = initialSantriList.filter(s =>
-    s.nama.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredSantri = santriWithStableIndex
+    .filter(s =>
+      s.nama.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => { // Sort resigned to bottom but maintain sequence
+      if (a.is_resigned === b.is_resigned) return a.stable_no_urut - b.stable_no_urut
+      return a.is_resigned ? 1 : -1
+    })
 
   const handleExport = () => {
     if (filteredSantri.length === 0) return toast.error("Tidak ada data untuk diexport")
 
     const exportData = filteredSantri.map((s, idx) => {
       const row: any = {
-        "No": s.no_urut || idx + 1,
+        "No": s.stable_no_urut,
         "Nama Lengkap": s.nama,
         "Gelombang": s.gelombang?.nama_gelombang || "-",
       }
       COLUMNS.forEach(col => {
         row[col.title] = s.pemberkasan?.[col.key] ? "v" : ""
       })
+      row["Keterangan"] = s.is_resigned ? "Mengundurkan Diri" : ""
       return row
     })
 
